@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Dialogue Master - Hoa Khuong 2</title>
+    <style>
+        :root { --primary: #0056b3; --secondary: #00b4d8; --success: #28a745; --error: #f3722c; --bg: #f0f7ff; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 850px; background: #fff; padding: 25px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary); font-size: 28px; margin-bottom: 5px; }
+        h2 { text-align: center; color: #666; font-size: 16px; margin-top: 0; margin-bottom: 25px; font-weight: 400; }
+        
+        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .card { background: #fcfdfe; padding: 20px; border-radius: 20px; border: 1px solid #e1eefb; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #d0e1f9; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: var(--secondary); box-shadow: 0 0 10px rgba(0,180,216,0.2); }
+
+        .chat-area { min-height: 180px; background: #fff; border: 2px solid #eef2f7; border-radius: 20px; padding: 20px; position: relative; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .ai-bubble { font-size: 20px; color: var(--primary); font-weight: 600; line-height: 1.5; margin-bottom: 15px; }
+        .user-text { font-size: 18px; color: #555; font-style: italic; min-height: 27px; }
+
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 16px; border: none; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .btn-listen { background: #e0f2fe; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-speak { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(0,86,179,0.3); }
+        .btn-speak:active { transform: translateY(3px); }
+        .recording { background: #d90429 !important; animation: pulse 1s infinite; }
+
+        .word-good { color: var(--success); font-weight: bold; margin: 0 2px; }
+        .word-bad { color: var(--error); font-weight: bold; text-decoration: underline; cursor: pointer; margin: 0 2px; }
+
+        .feedback-box { background: #fff9f5; border-left: 5px solid var(--error); padding: 15px; border-radius: 10px; display: none; margin-top: 15px; }
+
+        /* GIẤY KHEN */
+        .certificate { display: none; margin-top: 40px; padding: 50px 30px; border: 15px double #d4af37; background: #fff; text-align: center; border-radius: 5px; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+        .cert-title { font-size: 28px; font-weight: bold; color: #1a237e; margin-bottom: 20px; }
+        .cert-name { font-size: 38px; color: #b8860b; font-family: 'Times New Roman', serif; font-weight: bold; margin: 15px 0; display: block; }
+        .cert-info { font-size: 20px; color: #333; line-height: 1.8; margin-bottom: 20px; }
+        .cert-star { font-size: 40px; margin: 15px 0; }
+        .sign-area { display: flex; justify-content: space-around; margin-top: 50px; font-size: 18px; font-weight: bold; color: #444; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.97); } 100% { transform: scale(1); } }
+        @media (max-width: 600px) { .setup-grid { grid-template-columns: 1fr; } .sign-area { flex-direction: column; gap: 30px; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎤 English AI Dialogue</h1>
+    <h2>Hoa Khuong 2 Primary School</h2>
+
+    <div class="setup-grid">
+        <input id="stdName" placeholder="Student Name..." oninput="saveData()">
+        <input id="stdClass" placeholder="Class (e.g., 5/1)..." oninput="saveData()">
+    </div>
+
+    <div class="card">
+        <label style="font-weight: bold; color: var(--primary);">Practice Mode:</label>
+        <select id="mainMode" onchange="initApp()">
+            <option value="ai-ask">AI asks - Student answers (20 Units)</option>
+            <option value="std-ask">Student asks - AI answers (Smart AI)</option>
+        </select>
+        
+        <div id="unitWrapper" style="margin-top: 15px;">
+            <label style="font-weight: bold; color: var(--primary);">Choose Unit:</label>
+            <select id="unitSel" onchange="initApp()"></select>
+        </div>
+    </div>
+
+    <div class="chat-area">
+        <div class="ai-bubble" id="aiText">...</div>
+        <div class="user-text" id="userText">Click "START SPEAKING" to answer</div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-listen" onclick="speakAI()">🔊 Listen AI</button>
+        <button id="recBtn" class="btn-speak" onclick="toggleRecord()">🎙 START SPEAKING</button>
+    </div>
+
+    <div id="feedbackBox" class="feedback-box">
+        <b>💡 AI Feedback (Click orange words to listen):</b>
+        <div id="wordCorrection" style="margin-top: 10px; font-size: 18px; line-height: 1.8;"></div>
+    </div>
+
+    <div class="certificate" id="certBox">
+        <div class="cert-title">CERTIFICATE OF ENGLISH DIALOGUE COMPLETION</div>
+        <p>This certificate is proudly presented to</p>
+        <div class="cert-name" id="cName">...</div>
+        <div class="cert-info" id="cInfo"></div>
+        <div class="cert-star">⭐⭐⭐⭐⭐</div>
+        <div style="font-size: 22px; color: #28a745; font-weight: bold; margin: 20px 0;">🌟 Keep practising English every day!</div>
+        <div class="sign-area">
+            <div>Mrs Tran Thi Kim Yen</div>
+            <div>Mrs Pham Thi Ngoc Bich</div>
+        </div>
+    </div>
+</div>
+
+<audio id="soundClap" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+
+<script>
+// DỮ LIỆU ĐỐI THOẠI 20 UNIT (LESSON 1 & 2)
+const unitData = {
+    1: { title: "Unit 1: All about me", qs: ["What is your name?", "Which class are you in?", "Where do you live?", "What is your address?", "What's your favourite colour?", "What's your favourite animal?", "What's your favourite food?", "What is your favourite sport?"] },
+    2: { title: "Unit 2: Our homes", qs: ["Do you live in a house or a flat?", "Do you live in a tower?", "What's your address?", "What's your house like?", "Who do you live with?"] },
+    3: { title: "Unit 3: My foreign friends", qs: ["Where is your friend from?", "What nationality is she?", "Is he American or Australian?", "What's she like? Is she friendly?", "Is your friend clever and helpful?"] },
+    4: { title: "Unit 4: Free-time activities", qs: ["What do you like doing in your free time?", "Do you like watering the flowers?", "Do you like playing the violin?", "What do you do at the weekend?", "Do you often surf the Internet?"] },
+    5: { title: "Unit 5: My future job", qs: ["What would you like to be in the future?", "Would you like to be a doctor or a teacher?", "Why would you like to be a teacher?", "Why would you like to be a reporter?"] },
+    6: { title: "Unit 6: Our school rooms", qs: ["Where is the art room?", "Is the music room on the second floor?", "Could you tell me the way to the computer room?", "How can I get to the library?"] },
+    7: { title: "Unit 7: School activities", qs: ["What school activity do you like?", "Do you like doing projects?", "Why do you like solving maths problems?", "Do you think playing games is fun?"] },
+    8: { title: "Unit 8: In our classroom", qs: ["Where are the crayons?", "Is the pencil sharpener on the table?", "Whose set square is this?", "Whose glue stick is this?"] },
+    9: { title: "Unit 9: Outdoor activities", qs: ["Were you at the campsite last week?", "Were you at the aquarium yesterday?", "What did you do at the funfair?", "Did you dance around the campfire?"] },
+    10: { title: "Unit 10: Our school trip", qs: ["Did you go to Ba Na Hills?", "Did you visit the old buildings?", "How was your school trip?", "What did you do there?"] },
+    11: { title: "Unit 11: Family time", qs: ["What did your family do in Ha Long Bay?", "Did you take a boat trip?", "Did you eat seafood?", "Did you buy souvenirs?"] },
+    12: { title: "Unit 12: Our Tet holiday", qs: ["Will you make banh chung for Tet?", "Will you decorate your house?", "Where will you go at Tet?", "Will you visit your grandparents?"] },
+    13: { title: "Unit 13: Our special days", qs: ["What will you do on Children's Day?", "Will you have a party on Teachers' Day?", "What food will you have?", "What drinks will you have?"] },
+    14: { title: "Unit 14: Staying healthy", qs: ["How do you stay healthy?", "Do you do morning exercise every day?", "How often do you play sports?", "Do you eat healthy food?"] },
+    15: { title: "Unit 15: Our health", qs: ["What's the matter with you?", "Do you have a toothache?", "What should I do for a sore throat?", "Should I go to the dentist?"] },
+    16: { title: "Unit 16: Seasons and weather", qs: ["How is the weather in spring?", "Is it cold in winter?", "What do you usually wear in summer?", "Do you wear a jumper in winter?"] },
+    17: { title: "Unit 17: Stories for children", qs: ["Who are the main characters in the story?", "What is the fox like?", "How did the crow sing?", "Did the tortoise run fast?"] },
+    18: { title: "Unit 18: Means of transport", qs: ["Where do you want to visit?", "Do you want to visit Dragon Bridge?", "How can I get to the Opera House?", "Can I get there by bus?"] },
+    19: { title: "Unit 19: Places of interest", qs: ["What do you think of Hoi An Old Town?", "Is it more peaceful than the city?", "How far is it from here?", "Is it about 30 kilometres?"] },
+    20: { title: "Unit 20: Summer holidays", qs: ["Where are you going to visit this summer?", "Are you going to visit Phu Quoc Island?", "What are you going to do there?", "Are you going to swim in the sea?"] }
+};
+
+// ĐỔ DỮ LIỆU UNIT VÀO SELECT
+const unitSel = document.getElementById('unitSel');
+for(let i=1; i<=20; i++) {
+    unitSel.innerHTML += `<option value="${i}">${unitData[i].title}</option>`;
+}
+
+let currentIdx = 0;
+let isRecording = false;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = 'en-US';
+recognition.interimResults = false;
+
+function saveData() {
+    localStorage.setItem('stdName', document.getElementById('stdName').value);
+    localStorage.setItem('stdClass', document.getElementById('stdClass').value);
+}
+
+function initApp() {
+    currentIdx = 0;
+    document.getElementById('certBox').style.display = 'none';
+    document.getElementById('feedbackBox').style.display = 'none';
+    document.getElementById('userText').innerText = 'Click "START SPEAKING" to answer';
+    
+    if(document.getElementById('mainMode').value === 'ai-ask') {
+        document.getElementById('unitWrapper').style.display = 'block';
+        document.getElementById('aiText').innerText = unitData[unitSel.value].qs[0];
+    } else {
+        document.getElementById('unitWrapper').style.display = 'none';
+        document.getElementById('aiText').innerText = "Hello! I am your friend. Ask me anything!";
+    }
+    speakAI();
+}
+
+function speakAI() {
+    window.speechSynthesis.cancel();
+    const text = document.getElementById('aiText').innerText;
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'en-US'; msg.rate = 0.9;
+    window.speechSynthesis.speak(msg);
+}
+
+function toggleRecord() {
+    if(!isRecording) {
+        recognition.start();
+        document.getElementById('recBtn').innerText = "🛑 STOP & CHECK";
+        document.getElementById('recBtn').classList.add('recording');
+        isRecording = true;
+    } else {
+        recognition.stop();
+        stopRecordUI();
+    }
+}
+
+function stopRecordUI() {
+    document.getElementById('recBtn').innerText = "🎙 START SPEAKING";
+    document.getElementById('recBtn').classList.remove('recording');
+    isRecording = false;
+}
+
+recognition.onresult = (e) => {
+    const result = e.results[0][0];
+    const said = result.transcript;
+    const confidence = result.confidence;
+    document.getElementById('userText').innerText = said;
+    stopRecordUI();
+
+    if(document.getElementById('mainMode').value === 'ai-ask') {
+        handleAIAskMode(said, confidence);
+    } else {
+        handleStdAskMode(said);
+    }
+};
+
+function handleAIAskMode(said, conf) {
+    const unit = unitData[unitSel.value];
+    
+    // Phản hồi màu sắc
+    let html = "";
+    said.split(" ").forEach(w => {
+        if(conf > 0.85) html += `<span class="word-good">${w}</span> `;
+        else html += `<span class="word-bad" onclick="speakWord('${w}')">${w}</span> `;
+    });
+    document.getElementById('feedbackBox').style.display = 'block';
+    document.getElementById('wordCorrection').innerHTML = html;
+
+    // Chuyển câu hỏi
+    currentIdx++;
+    if(currentIdx < unit.qs.length) {
+        setTimeout(() => {
+            document.getElementById('aiText').innerText = unit.qs[currentIdx];
+            speakAI();
+        }, 2000);
+    } else {
+        showCertificate();
+    }
+}
+
+function handleStdAskMode(said) {
+    const s = said.toLowerCase();
+    let reply = "That's a good question! I'm not sure, but it sounds interesting.";
+    
+    // LOGIC TRẢ LỜI THÔNG MINH (SMART AI)
+    if(s.includes("name")) reply = "My name is AI Buddy. Nice to meet you!";
+    else if(s.includes("where") && s.includes("from")) reply = "I'm from Vietnam. How about you?";
+    else if(s.includes("how are you")) reply = "I'm great, thank you! And you?";
+    else if(s.includes("old")) reply = "I am 10 years old, just like you!";
+    else if(s.includes("job") || s.includes("future")) reply = "I'd like to be a teacher because I love teaching children.";
+    else if(s.includes("weather")) reply = "It's sunny and warm today. I love this weather!";
+    else if(s.includes("tet")) reply = "At Tet, I visit my grandparents and get lucky money.";
+    else if(s.includes("hobby") || s.includes("free time")) reply = "I like reading books and playing football in my free time.";
+    else if(s.includes("address")) reply = "I live at 65 Le Loi Street. It's a busy street.";
+    else if(s.includes("character") || s.includes("story")) reply = "I like the fox in the story. He is very clever.";
+
+    document.getElementById('aiText').innerText = reply;
+    speakAI();
+}
+
+function speakWord(w) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(w);
+    msg.lang = 'en-US';
+    window.speechSynthesis.speak(msg);
+}
+
+function showCertificate() {
+    document.getElementById('soundClap').play();
+    document.getElementById('certBox').style.display = 'block';
+    document.getElementById('cName').innerText = document.getElementById('stdName').value || "Talented Student";
+    document.getElementById('cInfo').innerHTML = "Class: " + (document.getElementById('stdClass').value || "5") + "<br>" + unitData[unitSel.value].title;
+    document.getElementById('certBox').scrollIntoView({ behavior: 'smooth' });
+}
+
+window.onload = () => {
+    document.getElementById('stdName').value = localStorage.getItem('stdName') || "";
+    document.getElementById('stdClass').value = localStorage.getItem('stdClass') || "";
+    initApp();
+};
+</script>
+
+</body>
+</html>
